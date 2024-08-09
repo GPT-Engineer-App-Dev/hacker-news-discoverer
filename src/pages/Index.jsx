@@ -17,15 +17,15 @@ const fetchTopStories = async () => {
 };
 
 const StoryCard = ({ story }) => (
-  <Card className="mb-4">
+  <Card className="mb-4 border-red-200 bg-red-50">
     <CardHeader>
-      <CardTitle className="text-lg font-semibold">{story.title}</CardTitle>
+      <CardTitle className="text-lg font-semibold text-red-800">{story.title}</CardTitle>
     </CardHeader>
     <CardContent>
-      <p className="text-sm text-gray-500 mb-2">Upvotes: {story.points}</p>
+      <p className="text-sm text-red-600 mb-2">Upvotes: {story.points}</p>
       <Button
         variant="link"
-        className="p-0"
+        className="p-0 text-red-700 hover:text-red-900"
         onClick={() => window.open(story.url, "_blank")}
       >
         Read more
@@ -35,13 +35,13 @@ const StoryCard = ({ story }) => (
 );
 
 const SkeletonCard = () => (
-  <Card className="mb-4">
+  <Card className="mb-4 border-red-200 bg-red-50">
     <CardHeader>
-      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-6 w-3/4 bg-red-200" />
     </CardHeader>
     <CardContent>
-      <Skeleton className="h-4 w-1/4 mb-2" />
-      <Skeleton className="h-4 w-1/6" />
+      <Skeleton className="h-4 w-1/4 mb-2 bg-red-200" />
+      <Skeleton className="h-4 w-1/6 bg-red-200" />
     </CardContent>
   </Card>
 );
@@ -58,17 +58,17 @@ const Index = () => {
   );
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">Top 100 Hacker News Stories</h1>
+    <div className="container mx-auto py-8 bg-red-100 min-h-screen">
+      <h1 className="text-3xl font-bold mb-8 text-red-900">Top 100 Hacker News Stories</h1>
       <div className="mb-6 flex">
         <Input
           type="text"
           placeholder="Search stories..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="mr-2"
+          className="mr-2 border-red-300 focus:ring-red-500 focus:border-red-500"
         />
-        <Button>
+        <Button className="bg-red-600 hover:bg-red-700 text-white">
           <Search className="h-4 w-4 mr-2" />
           Search
         </Button>
@@ -80,7 +80,7 @@ const Index = () => {
           ))}
         </div>
       )}
-      {error && <p className="text-red-500">Error: {error.message}</p>}
+      {error && <p className="text-red-700">Error: {error.message}</p>}
       {filteredStories && (
         <div>
           {filteredStories.map((story) => (
