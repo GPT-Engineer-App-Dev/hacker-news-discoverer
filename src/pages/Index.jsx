@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Star, Trash2 } from "lucide-react";
+import { Search, Star, Trash2, MessageSquare } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,13 +26,21 @@ const StoryCard = ({ story, isFavorite, onToggleFavorite }) => (
     <CardContent>
       <p className="text-sm text-red-600 mb-2">Upvotes: {story.points}</p>
       <div className="flex justify-between items-center">
-        <Button
-          variant="link"
-          className="p-0 text-red-700 hover:text-red-900"
-          onClick={() => window.open(story.url, "_blank")}
-        >
-          Read more
-        </Button>
+        <div>
+          <Button
+            variant="link"
+            className="p-0 text-red-700 hover:text-red-900 mr-4"
+            onClick={() => window.open(story.url, "_blank")}
+          >
+            Read more
+          </Button>
+          <Link to={`/story/${story.objectID}`}>
+            <Button variant="link" className="p-0 text-red-700 hover:text-red-900">
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Comments
+            </Button>
+          </Link>
+        </div>
         <Button
           variant="ghost"
           className="text-red-700 hover:text-red-900"
