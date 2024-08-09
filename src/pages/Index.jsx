@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Search, Star, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const fetchTopStories = async () => {
   const response = await fetch(
@@ -16,20 +17,29 @@ const fetchTopStories = async () => {
   return response.json();
 };
 
-const StoryCard = ({ story }) => (
+const StoryCard = ({ story, isFavorite, onToggleFavorite }) => (
   <Card className="mb-4 border-red-200 bg-red-50">
     <CardHeader>
       <CardTitle className="text-lg font-semibold text-red-800">{story.title}</CardTitle>
     </CardHeader>
     <CardContent>
       <p className="text-sm text-red-600 mb-2">Upvotes: {story.points}</p>
-      <Button
-        variant="link"
-        className="p-0 text-red-700 hover:text-red-900"
-        onClick={() => window.open(story.url, "_blank")}
-      >
-        Read more
-      </Button>
+      <div className="flex justify-between items-center">
+        <Button
+          variant="link"
+          className="p-0 text-red-700 hover:text-red-900"
+          onClick={() => window.open(story.url, "_blank")}
+        >
+          Read more
+        </Button>
+        <Button
+          variant="ghost"
+          className="text-red-700 hover:text-red-900"
+          onClick={() => onToggleFavorite(story)}
+        >
+          {isFavorite ? <Trash2 className="h-5 w-5" /> : <Star className="h-5 w-5" />}
+        </Button>
+      </div>
     </CardContent>
   </Card>
 );
@@ -48,12 +58,40 @@ const SkeletonCard = () => (
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [favorites, setFavorites] = useState([]);
   const { data, isLoading, error } = useQuery({
     queryKey: ["topStories"],
     queryFn: fetchTopStories,
   });
 
+  useEffect(() => {
+    const storedFavorites = localStorage.getItem("favorites");
+    if (storedFavorites) {
+      setFavorites(JSON.parse(storedFavorites));
+    }
+  }, []);
+
+  const saveFavorites = (newFavorites) => {
+    localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    setFavorites(newFavorites);
+  };
+
+  const toggleFavorite = (story) => {
+    const isFavorite = favorites.some((fav) => fav.objectID === story.objectID);
+    let newFavorites;
+    if (isFavorite) {
+      newFavorites = favorites.filter((fav) => fav.objectID !== story.objectID);
+    } else {
+      newFavorites = [...favorites, story];
+    }
+    saveFavorites(newFavorites);
+  };
+
   const filteredStories = data?.hits.filter((story) =>
+    story.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredFavorites = favorites.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -73,21 +111,50 @@ const Index = () => {
           Search
         </Button>
       </div>
-      {isLoading && (
-        <div>
-          {[...Array(10)].map((_, index) => (
-            <SkeletonCard key={index} />
-          ))}
-        </div>
-      )}
-      {error && <p className="text-red-700">Error: {error.message}</p>}
-      {filteredStories && (
-        <div>
-          {filteredStories.map((story) => (
-            <StoryCard key={story.objectID} story={story} />
-          ))}
-        </div>
-      )}
+      <Tabs defaultValue="all" className="mb-6">
+        <TabsList className="bg-red-200">
+          <TabsTrigger value="all" className="data-[state=active]:bg-red-600 data-[state=active]:text-white">All Stories</TabsTrigger>
+          <TabsTrigger value="favorites" className="data-[state=active]:bg-red-600 data-[state=active]:text-white">Favorites</TabsTrigger>
+        </TabsList>
+        <TabsContent value="all">
+          {isLoading && (
+            <div>
+              {[...Array(10)].map((_, index) => (
+                <SkeletonCard key={index} />
+              ))}
+            </div>
+          )}
+          {error && <p className="text-red-700">Error: {error.message}</p>}
+          {filteredStories && (
+            <div>
+              {filteredStories.map((story) => (
+                <StoryCard
+                  key={story.objectID}
+                  story={story}
+                  isFavorite={favorites.some((fav) => fav.objectID === story.objectID)}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="favorites">
+          {filteredFavorites.length === 0 ? (
+            <p className="text-red-700">No favorites yet. Add some stories to your favorites!</p>
+          ) : (
+            <div>
+              {filteredFavorites.map((story) => (
+                <StoryCard
+                  key={story.objectID}
+                  story={story}
+                  isFavorite={true}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
